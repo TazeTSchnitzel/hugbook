@@ -35,6 +35,10 @@
         <article>
             <h1>{{ nick }}'s homepage</h1>
             You have {{ yourhugs }} hugs. Your profile URL is <a href="{{ full_url }}">{{ full_url }}</a>!
+            <form action=/changenick method=post>
+                <input type=text name=nick value="{{ nick }}" maxlength=18>
+                <input type=submit value="Change nickname">
+            </form>
         </article>
         {{/logged_in}}
         {{^logged_in}}

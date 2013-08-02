@@ -206,6 +206,23 @@ app.post('/user/:hash/hug', function(req, res) {
     res.redirect('/user/' + req.params.hash);
 });
 
+app.post('/changenick', function(req, res) {
+    var u = getSessionData(req);
+    var viewdata = u.viewdata;
+    if (!u.loggedin) {
+        res.send("You need to be logged in to change your nick");
+        return;
+    }
+    if (req.body.nick.length < 1 || req.body.nick.length > 18) {
+        res.send("Your nickname must be between 1 and 18 Unicode codepoints long");
+        return;
+    }
+    u.userdata.nick = req.body.nick;
+    saveData();
+    recalculateLeaderboard();
+    res.redirect('/');
+});
+
 app.post('/login', function (req, res) {
     personaAssert(req.body.assertion, function (good, email) {
         if (!good) {
