@@ -34,7 +34,12 @@
         {{#logged_in}}
         <article>
             <h1>{{ nick }}'s homepage</h1>
-            You have {{ yourhugs }} hugs. Your profile URL is <a href="{{ full_url }}">{{ full_url }}</a>!
+            <p>You have {{ yourhugs }} hugs. Your profile URL is <a href="{{ full_url }}">{{ full_url }}</a>!<p>
+            <p>PROTIP: Share this with your friends to accumulate more hugs!
+            <!-- AddThis Button BEGIN -->
+            <a class="addthis_button" href="http://www.addthis.com/bookmark.php?v=300&amp;pubid=xa-51fbf0a343ecc161"><img src="http://s7.addthis.com/static/btn/v2/lg-share-en.gif" width="125" height="16" alt="Bookmark and Share" style="border:0"/></a>
+            <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=xa-51fbf0a343ecc161"></script>
+            <!-- AddThis Button END --></p>
             <form action=/changenick method=post>
                 <input type=text name=nick value="{{ nick }}" maxlength=18>
                 <input type=submit value="Change nickname">
