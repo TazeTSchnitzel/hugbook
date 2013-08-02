@@ -1,0 +1,46 @@
+<!doctype html>
+<meta charset=utf-8>
+<title>Hugbook</title>
+<link rel=stylesheet href=/media/style.css>
+
+<div id=main>
+<header>
+    <a href=/ id=logo>Hugbook &lt;3</a>
+    {{#logged_in}}
+    <div id=loggedin>Hello there, <a href="{{ url }}">{{ nick }}</a>! <button id=logoutbtn>Log out :(</button></div>
+    {{/logged_in}}
+</header>
+
+<section>
+    <p>
+        Hugbook is a social network and/or MMORPG with one goal: spreading hugs all over the world!
+        <br>There are currently {{ numpeeps }} users on hugbook who have hugged {{ numhugs }} times &mdash; almost {{ avghugs }} per user! :)
+    </p>
+    {{#newestuser_nick}}
+    <p>
+        Welcome to our newest user, <a href="{{ newestuser_url }}">{{ newestuser_nick }}</a>!
+    </p>
+    {{/newestuser_nick}}
+    {{#logged_in}}
+    <article>
+        <h1>{{ nick }}'s homepage</h1>
+        You have {{ yourhugs }} hugs. Your profile URL is <a href="{{ url }}">http://hugbook.ajf.me{{ url }}</a>!
+    </article>
+    {{/logged_in}}
+    {{^logged_in}}
+    <button id=signbtn>Sign in/up now!</button>
+    {{/logged_in}}
+    <noscript>Hugbook requires a modern, ECMAScript 5-compliant browser. You appear to have JavaScript disabled, or your browser doesn't support it.</noscript>
+</section>
+
+<footer>
+    Copyright &copy; 2013 <a href="http://ajf.me/">Andrea Faulds</a>.<br>
+    Made in Scotland &lt;3
+</footer>
+</div>
+
+<script src="https://login.persona.org/include.js"></script>
+<script>hugbook = {
+    loggedIn: {{&loggedin_json}}
+};</script>
+<script src=/media/hugbook.js></script>

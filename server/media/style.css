@@ -1,0 +1,39 @@
+body {
+    padding: 0;
+    margin: 0;
+    background: pink;
+    font-family: sans-serif;
+}
+
+header, footer {
+    background: hotpink;
+    color: white;
+}
+
+header, footer, section {
+    padding: 4px;
+}
+
+header {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+#logo {
+    font-size: 24pt;
+    text-decoration: inherit;
+    color: inherit;
+}
+
+#loggedin {
+    float: right;
+}
+
+footer {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+#main {
+    background: white;
+}
