@@ -22,6 +22,8 @@ try {
 
 var leaderboard = [];
 
+var sessions = {};
+
 function recalculateLeaderboard() {
     leaderboard = _.sortBy(data.users, function (user) {
         return -user.hugs.length;
@@ -30,6 +32,14 @@ function recalculateLeaderboard() {
 
 function timestamp() {
     return (new Date()).toISOString();
+}
+
+function randomB36() {
+    var out = '', i = 0;
+    for (i = 0; i < 20; i++) {
+        out += (Math.random() * 36).toString(36);
+    }
+    return out;
 }
 
 function doHash(data, algo) {
@@ -82,10 +92,11 @@ function personaAssert (assertion, callback) {
 
 function getSessionData (request) {
     var returndata = {}, viewdata = {};
-    if (request.signedCookies.hasOwnProperty('user')) {
-        viewdata.loggedin_json = JSON.stringify(request.signedCookies.user);
+    if (request.signedCookies.hasOwnProperty('session')
+        && sessions.hasOwnProperty(request.signedCookies.session)) {
+        returndata.userdata = data.users[sessions[request.signedCookies.session]];
+        viewdata.loggedin_json = JSON.stringify(returndata.userdata.email);
         viewdata.logged_in = true;
-        returndata.userdata = data.users[request.signedCookies.user];
         viewdata.nick = returndata.userdata.nick;
         viewdata.yourhugs = returndata.userdata.hugs.length;
         viewdata.url = '/user/' + returndata.userdata.hash;
@@ -240,14 +251,19 @@ app.post('/login', function (req, res) {
                 data.last_user = email;
                 saveData();
             }
-            res.cookie('user', email, { signed: true, maxAge: 3600*24*30*1000 });
+            var sessionkey = randomB36();
+            sessions[sessionkey] = email;
+            res.cookie('session', sessionkey, { signed: true, maxAge: 3600*24*30*1000 });
             res.redirect('/');
         }
     });
 });
 
 app.get('/logout', function (req, res) {
-    res.clearCookie('user', { signed: true});
+    if (sessions.hasOwnProperty(req.signedCookies.session)) {
+        delete sessions[req.signedCookies.session];
+    }
+    res.clearCookie('session', { signed: true });
     res.redirect('/');
 });
 
