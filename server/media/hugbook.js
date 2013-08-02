@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    window.onload = function () {
+    function doPersona() {
         navigator.id.watch({
             loggedInUser: hugbook.loggedIn,
             onlogin: function (assertion) {
@@ -21,13 +21,17 @@
                 window.location = '/logout';
             }
         });
+    }
 
+    window.onload = function () {
         if (hugbook.loggedIn) {
             document.getElementById('logoutbtn').onclick = function () {
+                doPersona();
                 navigator.id.logout();
             };
         } else if (window.location.pathname === '/') {
             document.getElementById('signbtn').onclick = function () {
+                doPersona();
                 navigator.id.request();
             };
         }
