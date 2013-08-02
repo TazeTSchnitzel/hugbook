@@ -51,18 +51,25 @@
             <h1>Profile of {{ user_nick }}</h1>
             {{ user_nick }} has {{ user_hugs }} hugs and signed up {{ user_date }}.
 
+            <article>
             {{#user_huggable}}
             <form action="{{user_hug_url}}" method=post>
                 <input type=submit value=Hug!>
             </form>
             {{/user_huggable}}
+            {{#canthug_reason}}
+                {{canthug_reason}}
+            {{/canthug_reason}}
+            </article>
 
-            <h2>{{ user_nick }}'s hugs</h2>
+            <article>
+            <h1>{{ user_nick }}'s hugs</h1>
             <ul>
                 {{#user_huglist}}
                     <li>{{#from}}from: <a href="{{from_url}}">{{from}}</a>{{/from}}{{#to}}to: <a href="{{to_url}}">{{to}}</a>{{/to}} (<time>{{date}}</time>)
                 {{/user_huglist}}
             </ul>
+            </article>
         </article>
         {{/user_nick}}
     {{/userpage}}

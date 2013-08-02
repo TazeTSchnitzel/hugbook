@@ -95,13 +95,13 @@ function getSessionData (request) {
     if (request.signedCookies.hasOwnProperty('session')
         && sessions.hasOwnProperty(request.signedCookies.session)) {
         returndata.userdata = data.users[sessions[request.signedCookies.session]];
-        viewdata.loggedin_json = JSON.stringify(returndata.userdata.email);
         viewdata.logged_in = true;
         viewdata.nick = returndata.userdata.nick;
         viewdata.yourhugs = returndata.userdata.hugs.length;
         viewdata.url = '/user/' + returndata.userdata.hash;
         viewdata.full_url = config.origin + viewdata.url;
         returndata.email = sessions[request.signedCookies.session];
+        viewdata.loggedin_json = JSON.stringify(returndata.email);
         returndata.loggedin = true;
     } else {
         viewdata.loggedin_json = JSON.stringify(null);
@@ -161,11 +161,16 @@ app.get('/user/:hash', function(req, res) {
     viewdata.user_nick = userdata.nick;
     viewdata.user_hugs = userdata.hugs.length;
     viewdata.user_date = moment(userdata.created).fromNow();
-    if (u.loggedin && u.email !== data.hashes[req.params.hash]) {
+    viewdata.user_huggable = false;
+    if (!u.loggedin) {
+        viewdata.canthug_reason = "You need to be logged in to hug.";
+    } else if (u.email === data.hashes[req.params.hash]) {
+        viewdata.canthug_reason = "You can't hug yourself.";
+    } else if (u.userdata.last_hug !== null && ((new Date()) - (new Date(u.userdata.last_hug)) < (config.hug_timeout_seconds * 1000))) {
+        viewdata.canthug_reason = "You can only hug once every " + config.hug_timeout_english + ", and your last hug was " + moment(u.userdata.last_hug).fromNow();
+    } else {
         viewdata.user_huggable = true;
         viewdata.user_hug_url = '/user/' + req.params.hash + '/hug';
-    } else {
-        viewdata.user_huggable = false;
     }
     viewdata.user_huglist = userdata.hugs.map(function (hugdata) {
         if (hugdata.hasOwnProperty('to')) {
@@ -201,7 +206,12 @@ app.post('/user/:hash/hug', function(req, res) {
         res.send("You can't hug yourself!");
         return;
     }
+    if ((u.last_hug !== null && ((new Date()) - (new Date(u.last_hug)) >= (config.hug_timeout_seconds * 1000)))) {
+        res.send("You can only hug once every " + config.hug_timeout_english);
+        return;
+    }
     var ts = timestamp();
+    u.userdata.last_hug = ts;
     u.userdata.hugs.push({
         to: data.hashes[req.params.hash],
         date: ts
@@ -244,7 +254,8 @@ app.post('/login', function (req, res) {
                     friends: [],
                     nick: email.split('@')[0],
                     hash: hashEmail(email),
-                    created: timestamp()
+                    created: timestamp(),
+                    last_hug: null
                 };
                 data.hashes[hashEmail(email)] = email;
                 data.num_users++;
