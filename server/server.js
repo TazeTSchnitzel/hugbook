@@ -97,7 +97,6 @@ function getSessionData (request) {
         viewdata.logged_in = false;
         returndata.loggedin = false;
     }
-    console.log(viewdata.loggedin_json);
     returndata.viewdata = viewdata;
     return returndata;
 }
@@ -241,7 +240,7 @@ app.post('/login', function (req, res) {
                 data.last_user = email;
                 saveData();
             }
-            res.cookie('user', email, { signed: true, maxAge: 3600*24*30 });
+            res.cookie('user', email, { signed: true, maxAge: 3600*24*30*1000 });
             res.redirect('/');
         }
     });
