@@ -208,7 +208,7 @@ app.post('/user/:hash/hug', function(req, res) {
         res.send("You can't hug yourself!");
         return;
     }
-    if ((u.userdata.last_hugs.hasOwnProperty(theiremail) && ((new Date()) - (new Date(u.userdata.last_hugs[theiremail])) >= (config.hug_timeout_seconds * 1000)))) {
+    if ((u.userdata.last_hugs.hasOwnProperty(theiremail) && ((new Date()) - (new Date(u.userdata.last_hugs[theiremail])) < (config.hug_timeout_seconds * 1000)))) {
         res.send("You can only hug a given person once every " + config.hug_timeout_english);
         return;
     }
