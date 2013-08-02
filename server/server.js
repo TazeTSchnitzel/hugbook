@@ -101,7 +101,7 @@ function getSessionData (request) {
         viewdata.yourhugs = returndata.userdata.hugs.length;
         viewdata.url = '/user/' + returndata.userdata.hash;
         viewdata.full_url = config.origin + viewdata.url;
-        returndata.email = returndata.userdata.email;
+        returndata.email = sessions[request.signedCookies.session];
         returndata.loggedin = true;
     } else {
         viewdata.loggedin_json = JSON.stringify(null);
