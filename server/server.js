@@ -2,7 +2,9 @@ var express = require('express'),
     consolidate = require('consolidate'),
     https = require('https'),
     fs = require('fs'),
-    crypto = require('crypto');
+    crypto = require('crypto'),
+    moment = require('moment'),
+    _ = require('underscore');
 
 var config = require('./config.json');
 
@@ -18,6 +20,14 @@ try {
     };
 }
 
+var leaderboard = [];
+
+function recalculateLeaderboard() {
+    leaderboard = _.sortBy(data.users, function (user) {
+        return -user.hugs.length;
+    }).slice(0, 10);
+}
+
 function timestamp() {
     return (new Date()).toISOString();
 }
@@ -29,7 +39,7 @@ function doHash(data, algo) {
 }
 
 function hashEmail(email) {
-    return doHash(data + config.email_secret, 'sha256');
+    return doHash(email + config.email_secret, 'sha256');
 }
 
 function saveData() {
@@ -79,6 +89,7 @@ function getSessionData (request) {
         viewdata.nick = returndata.userdata.nick;
         viewdata.yourhugs = returndata.userdata.hugs.length;
         viewdata.url = '/user/' + returndata.userdata.hash;
+        viewdata.full_url = config.origin + viewdata.url;
         returndata.email = request.signedCookies.user;
         returndata.loggedin = true;
     } else {
@@ -86,6 +97,7 @@ function getSessionData (request) {
         viewdata.logged_in = false;
         returndata.loggedin = false;
     }
+    console.log(viewdata.loggedin_json);
     returndata.viewdata = viewdata;
     return returndata;
 }
@@ -112,10 +124,19 @@ app.get('/', function(req, res){
     viewdata.numpeeps = data.num_users;
     viewdata.numhugs = data.num_hugs;
     viewdata.avghugs = Math.ceil(data.num_hugs/data.num_users);
+    viewdata.leaderboard = leaderboard.map(function (data) {
+        return {
+            leader: data.nick,
+            leader_url: '/user/' + data.hash,
+            leader_hugs: data.hugs.length
+        };
+    });
     if (data.last_user) {
         viewdata.newestuser_nick = data.users[data.last_user].nick;
         viewdata.newestuser_url = '/user/' + data.users[data.last_user].hash;
+        viewdata.newestuser_date = moment(data.users[data.last_user].created).fromNow();
     }
+    viewdata.homepage = true;
     res.render('index', viewdata);
 });
 
@@ -129,13 +150,30 @@ app.get('/user/:hash', function(req, res) {
     var userdata = data.users[data.hashes[req.params.hash]];
     viewdata.user_nick = userdata.nick;
     viewdata.user_hugs = userdata.hugs.length;
+    viewdata.user_date = moment(userdata.created).fromNow();
     if (u.loggedin && u.email !== data.hashes[req.params.hash]) {
         viewdata.user_huggable = true;
         viewdata.user_hug_url = '/user/' + req.params.hash + '/hug';
     } else {
         viewdata.user_huggable = false;
     }
-    res.render('user', viewdata);
+    viewdata.user_huglist = userdata.hugs.map(function (hugdata) {
+        if (hugdata.hasOwnProperty('to')) {
+            return {
+                to: data.users[hugdata.to].nick,
+                to_url: '/user/' + data.users[hugdata.to].hash,
+                date: moment(hugdata.date).fromNow()
+            };
+        } else {
+            return {
+                from: data.users[hugdata.from].nick,
+                from_url: '/user/' + data.users[hugdata.from].hash,
+                date: moment(hugdata.date).fromNow()
+            };
+        }
+    }).reverse();
+    viewdata.userpage = true;
+    res.render('index', viewdata);
 });
 
 app.post('/user/:hash/hug', function(req, res) {
@@ -153,14 +191,18 @@ app.post('/user/:hash/hug', function(req, res) {
         res.send("You can't hug yourself!");
         return;
     }
+    var ts = timestamp();
     u.userdata.hugs.push({
-        to: data.hashes[req.params.hash]
+        to: data.hashes[req.params.hash],
+        date: ts
     });
     data.users[data.hashes[req.params.hash]].hugs.push({
-        from: u.email
+        from: u.email,
+        date: ts
     });
     data.num_hugs++;
     saveData();
+    recalculateLeaderboard();
     res.redirect('/user/' + req.params.hash);
 });
 
@@ -182,7 +224,7 @@ app.post('/login', function (req, res) {
                 data.last_user = email;
                 saveData();
             }
-            res.cookie('user', email, { signed: true });
+            res.cookie('user', email, { signed: true, maxAge: 3600*24*30 });
             res.redirect('/');
         }
     });
@@ -196,3 +238,5 @@ app.get('/logout', function (req, res) {
 app.use("/media", express.static(__dirname + '/media'));
 
 app.listen(config.port);
+
+recalculateLeaderboard();

@@ -12,25 +12,56 @@
 </header>
 
 <section>
-    <p>
-        Hugbook is a social network and/or MMORPG with one goal: spreading hugs all over the world!
-        <br>There are currently {{ numpeeps }} users on hugbook who have hugged {{ numhugs }} times &mdash; almost {{ avghugs }} per user! :)
-    </p>
-    {{#newestuser_nick}}
-    <p>
-        Welcome to our newest user, <a href="{{ newestuser_url }}">{{ newestuser_nick }}</a>!
-    </p>
-    {{/newestuser_nick}}
-    {{#logged_in}}
-    <article>
-        <h1>{{ nick }}'s homepage</h1>
-        You have {{ yourhugs }} hugs. Your profile URL is <a href="{{ url }}">http://hugbook.ajf.me{{ url }}</a>!
-    </article>
-    {{/logged_in}}
-    {{^logged_in}}
-    <button id=signbtn>Sign in/up now!</button>
-    {{/logged_in}}
-    <noscript>Hugbook requires a modern, ECMAScript 5-compliant browser. You appear to have JavaScript disabled, or your browser doesn't support it.</noscript>
+    <noscript><p>Hugbook requires a modern, ECMAScript 5-compliant browser. You appear to have JavaScript disabled, or your browser doesn't support it.</p></noscript>
+    {{#homepage}}
+        <p>
+            Hugbook is a social network and/or MMORPG with one goal: spreading hugs all over the world!
+            <br>There are currently {{ numpeeps }} users on hugbook who have hugged {{ numhugs }} times &mdash; almost {{ avghugs }} per user! :)
+        </p>
+        {{#newestuser_nick}}
+        <p>
+            Welcome to our newest user, <a href="{{ newestuser_url }}">{{ newestuser_nick }}</a>! (joined {{newestuser_date}})
+        </p>
+        {{/newestuser_nick}}
+        <aside>
+            <h2>Leaderboard</h2>
+            <ol>
+                {{#leaderboard}}
+                    <li><a href="{{leader_url}}">{{leader}}</a> ({{leader_hugs}} hugs)
+                {{/leaderboard}}
+            </ol>
+        </aside>
+        {{#logged_in}}
+        <article>
+            <h1>{{ nick }}'s homepage</h1>
+            You have {{ yourhugs }} hugs. Your profile URL is <a href="{{ full_url }}">{{ full_url }}</a>!
+        </article>
+        {{/logged_in}}
+        {{^logged_in}}
+        <button id=signbtn>Sign in/up now!</button>
+        {{/logged_in}}
+    {{/homepage}}
+    {{#userpage}}
+        {{#user_nick}}
+        <article>
+            <h1>Profile of {{ user_nick }}</h1>
+            {{ user_nick }} has {{ user_hugs }} hugs and signed up {{ user_date }}.
+
+            {{#user_huggable}}
+            <form action="{{user_hug_url}}" method=post>
+                <input type=submit value=Hug!>
+            </form>
+            {{/user_huggable}}
+
+            <h2>{{ user_nick }}'s hugs</h2>
+            <ul>
+                {{#user_huglist}}
+                    <li>{{#from}}from: <a href="{{from_url}}">{{from}}</a>{{/from}}{{#to}}to: <a href="{{to_url}}">{{to}}</a>{{/to}} (<time>{{date}}</time>)
+                {{/user_huglist}}
+            </ul>
+        </article>
+        {{/user_nick}}
+    {{/userpage}}
 </section>
 
 <footer>
